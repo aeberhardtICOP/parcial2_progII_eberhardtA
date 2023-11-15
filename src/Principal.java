@@ -79,16 +79,53 @@ public class Principal {
 	                   }
 	                    break;
 	                case 4:
+	                	scanner.nextLine();
+	                	System.out.println("Ingrese fecha: (FORMATO dd/mm/aaaa)");
+	                	String fech = scanner.nextLine();
+	                	System.out.println("Ingrese estado: "
+	                			+ "\n1)Liberada"
+	                			+ "\n2)Reservada"
+	                			+ "\n3)Ver todas");
+	                	int opc = scanner.nextInt();
+	                	switch(opc) {
+	                	case 1:
+	                		paucke.listarMesas("Liberada", fech);
+	                		break;
+	                	case 2:
+	                		paucke.listarMesas("Reservada", fech);
+	                		break;
+	                	case 3: 
+	                		paucke.listarMesas("", fech);
+	                		break;
+	                		default:
+	                			System.out.println("No ingreso opcion valida..");
+	                	}
 	                    
 	                    break;
 	                case 5:
-	                    
+	                    System.out.println("Seleccione opcion: "
+	                    		+ "\n1)Capacidades actuales"
+	                    		+ "\n2)Capacidades en fecha");
+	                    int opcionn=scanner.nextInt();
+	                    switch(opcionn) {
+	                    case 1:
+	                    	paucke.mostrarCapacidad();
+	                    	break;
+	                    case 2:
+	                    	scanner.nextLine();
+	                    	System.out.println("Ingrese fecha:");
+	                    	String date = scanner.nextLine();
+	                    	paucke.mostrarCapacidad(date);
+	                    	break;
+	                    	default:
+	                    		System.out.println("No selecciono opcion correcta..");
+	                    }
 	                    break;
 	                case 6:
-	                   
+	                   paucke.altaMesa();
 	                    break;
 	                case 7:
-	                    
+	                    paucke.bajaMesa();
 	                    break;
 				    case 8:
 	                    System.out.println("Ingrese nro de mesas:");
@@ -102,7 +139,7 @@ public class Principal {
 				    	paucke.cambiarEstadoMesa();
 				    	break;
 				    case 10:
-				    	
+				    	paucke.generarReserva();
 				    	break;
 	                case -1:
 	                    System.out.println("Saliendo del programa.");

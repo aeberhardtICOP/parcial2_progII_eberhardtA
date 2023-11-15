@@ -3,6 +3,7 @@ package model;
 import java.util.Date;
 
 public class Reserva {
+	private static Long nro=1L;
 	private Long id;
 	private Date fecha;
 	private String nombre;
@@ -10,9 +11,10 @@ public class Reserva {
 	private int cantidadComensales;
 	private Mesa mesa;
 	
-	public Reserva(Long id, String nombre, String apellido, int cantidadComensales, Mesa mesa) {
+	public Reserva(Date fecha, String nombre, String apellido, int cantidadComensales, Mesa mesa) {
 		super();
-		this.id = id;
+		this.id = nro++;
+		this.fecha=fecha;
 		this.nombre = nombre;
 		this.apellido = apellido;
 		this.cantidadComensales = cantidadComensales;
@@ -21,6 +23,7 @@ public class Reserva {
 
 	public Reserva() {
 		super();
+		this.id = nro++;
 	}
 
 	public Long getId() {
