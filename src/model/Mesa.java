@@ -1,5 +1,7 @@
 package model;
 
+import excepciones.EstadoInvalidoException;
+
 public class Mesa {
 	private static Long nro=1L;
 	private Long nroMesa;
@@ -14,6 +16,18 @@ public class Mesa {
 		this.capacidad = capacidad;
 		this.consumo = consumo;
 	}
+	
+	
+
+	public Mesa(Long nroMesa, Estado estado, int capacidad, double consumo) {
+		super();
+		this.nroMesa = nroMesa;
+		this.estado = estado;
+		this.capacidad = capacidad;
+		this.consumo = consumo;
+	}
+
+
 
 	public Mesa() {
 		super();
@@ -36,6 +50,15 @@ public class Mesa {
 	public void setEstado(Estado estado) {
 		this.estado = estado;
 	}
+	public void setEstado(String estado) {
+		if(estado.equals("Liberada")) {
+			this.estado=new Liberada();
+		}else if(estado.equals("Reservada")) {
+			this.estado=new Reservada();
+		}else if(estado.equals("Ocupada")) {
+			this.estado=new Ocupada();
+		}
+	}
 
 	public int getCapacidad() {
 		return capacidad;
@@ -53,15 +76,15 @@ public class Mesa {
 		this.consumo = consumo;
 	}
 	
-	public void liberar() {
+	public void liberar() throws EstadoInvalidoException {
 		this.estado.liberar(this);
 	}
 	
-	public void reservar() {
+	public void reservar() throws EstadoInvalidoException {
 		this.estado.reservar(this);
 	}
 	
-	public void ocupar() {
+	public void ocupar() throws EstadoInvalidoException {
 		this.estado.ocupar(this);
 	}
 	
@@ -76,4 +99,6 @@ public class Mesa {
 		}
 		return estado;
 	}
+	
+	
 }

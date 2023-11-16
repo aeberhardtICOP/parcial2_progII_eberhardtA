@@ -1,15 +1,18 @@
 import java.util.Scanner;
 
+import excepciones.EstadoInvalidoException;
 import model.Estado;
 import model.Liberada;
 import model.Mesa;
 import model.Resto;
+import repository.Conexion;
 
 public class Principal {
 
 	public static void main(String[] args) {
 		Resto paucke = new Resto("Paucke ATENEO Inmaculada", "lopez 2545", "Santa FE");
-		
+		Conexion con = new Conexion();
+		con.conectar();
 		paucke.cargarMesas(4, 2);
 		paucke.cargarMesas(4, 4);
 		paucke.cargarMesas(3, 6);
@@ -136,7 +139,12 @@ public class Principal {
 	                    paucke.cargarMesas(nroMesas, nroComensales);
 	                    break;
 				    case 9:
-				    	paucke.cambiarEstadoMesa();
+					try {
+						paucke.cambiarEstadoMesa();
+					} catch (EstadoInvalidoException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				    	break;
 				    case 10:
 				    	paucke.generarReserva();

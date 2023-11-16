@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 
+import excepciones.EstadoInvalidoException;
+
 public class Resto {
 	private static Long nro=1L;
 	private Scanner scanner;
@@ -89,10 +91,15 @@ public class Resto {
 		return mesas;
 	}
 
-
+	public HashMap<Long, Reserva> getReservas() {
+		return reservas;
+	}
 
 	public void setMesas(HashMap<Long, Mesa> mesas) {
 		this.mesas = mesas;
+	}
+	public void setReservas(HashMap<Long, Reserva> reservas) {
+		this.reservas = reservas;
 	}
 	
 	public void agregarMesa(Mesa m) {
@@ -166,7 +173,7 @@ public class Resto {
 		}
 	}
 	
-	public void cambiarEstadoMesa() {
+	public void cambiarEstadoMesa() throws EstadoInvalidoException {
 		mostrarMesas();
 		System.out.println("Ingrese NRO de mesa:");
 		Long nro = scanner.nextLong();
@@ -196,6 +203,7 @@ public class Resto {
 			System.out.println("No existe esa mesa..");
 		}
 	}
+	
 	public void listarMesas(String estado) {
 		for (Entry<Long, Mesa> entry : this.mesas.entrySet()) {
 			if(entry.getValue().enQueEstadoEstoy().equals(estado)) {
@@ -264,6 +272,43 @@ public class Resto {
 			System.out.println("No ingreso un formato valido...");
 		}
 	}
+	
+	public void agregarReserva(Reserva res) {
+		this.reservas.put(id, res);
+	}
+	
+	public HashMap<Long, Mesa> mesasDisponibles(Date fecha, int capacidad) {
+		HashMap<Long, Mesa> mesasDisponibles = new HashMap<Long, Mesa>();
+		 for (Mesa mesa : mesas.values()) {
+	            if (mesa.getCapacidad() >= capacidad) {
+	                if (esMesaDisponibleEnFecha(mesa, fecha)) {
+	                    mesasDisponibles.put(mesa.getNroMesa(), mesa);
+	                }
+	            }
+	        }
+		 return mesasDisponibles;
+	}
+	
+	public HashMap<Long, Mesa> mesasDisponibles(Date fecha) {
+		HashMap<Long, Mesa> mesasDisponibles = new HashMap<Long, Mesa>();
+		 for (Mesa mesa : mesas.values()) {
+	         if (esMesaDisponibleEnFecha(mesa, fecha)) {
+	        	 mesasDisponibles.put(mesa.getNroMesa(), mesa);
+	         }
+	        }
+		 return mesasDisponibles;
+	}
+	
+	public HashMap<Long, Mesa> mesasNoDisponibles(Date fecha) {
+		HashMap<Long, Mesa> mesasDisponibles = new HashMap<Long, Mesa>();
+		 for (Mesa mesa : mesas.values()) {
+	         if (esMesaDisponibleEnFecha(mesa, fecha)==false) {
+	        	 mesasDisponibles.put(mesa.getNroMesa(), mesa);
+	         }
+	        }
+		 return mesasDisponibles;
+	}
+	
 	 private boolean esMesaDisponibleEnFecha(Mesa mesa, Date fecha) {
 	        for (Reserva reserva : reservas.values()) {
 	            if (reserva.getMesa().equals(mesa) && reserva.getFecha().equals(fecha)) {
@@ -369,6 +414,14 @@ public class Resto {
 		 }catch(NullPointerException e) {
 			 System.out.println("no existe esa mesa...");
 		 }
+	 }
+	 
+	 public void bajaMesa(Long nroMesa) {
+		 mesas.remove(nroMesa);
+	 }
+	 
+	 public Mesa getMesa(Long NroMesa) {
+		 return mesas.get(NroMesa);
 	 }
 }
 

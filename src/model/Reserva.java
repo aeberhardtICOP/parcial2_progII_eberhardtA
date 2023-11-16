@@ -20,6 +20,18 @@ public class Reserva {
 		this.cantidadComensales = cantidadComensales;
 		this.mesa = mesa;
 	}
+	
+
+	public Reserva(Long id, Date fecha, String nombre, String apellido, int cantidadComensales, Mesa mesa) {
+		super();
+		this.id = id;
+		this.fecha = fecha;
+		this.nombre = nombre;
+		this.apellido = apellido;
+		this.cantidadComensales = cantidadComensales;
+		this.mesa = mesa;
+	}
+
 
 	public Reserva() {
 		super();
