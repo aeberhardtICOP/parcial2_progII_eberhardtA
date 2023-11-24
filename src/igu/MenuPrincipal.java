@@ -102,6 +102,19 @@ public class MenuPrincipal extends JFrame {
 			}
 		});
 		
+		JMenuItem mnitmConsumos = new JMenuItem("Consumos");
+		mnuInfo.add(mnitmConsumos);
+		mnitmConsumos.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ConsumoMesas c = new ConsumoMesas(contr);
+				c.setVisible(true);
+				dispose();
+				
+			}
+		});
+		
 		JMenuItem mnitmAcercaDe = new JMenuItem("Acerca de..");
 		mnuInfo.add(mnitmAcercaDe);
 		mnitmAcercaDe.addActionListener(new ActionListener() {

@@ -12,7 +12,10 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 
 import excepciones.EstadoInvalidoException;
+import model.Estado;
+import model.Liberada;
 import model.Mesa;
+import model.Reservada;
 
 import javax.swing.border.EtchedBorder;
 import java.awt.Color;
@@ -24,10 +27,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JComboBox;
+import javax.swing.DefaultComboBoxModel;
 
 public class VistaActual extends JFrame {
 
@@ -41,6 +48,7 @@ public class VistaActual extends JFrame {
 	private JButton btnOcupar;
 	private JPanel panel_1;
 	private JButton btnReservar;
+	private JComboBox cmbxFiltro;
 
 	public VistaActual(Controlador control) {
 		setResizable(false);
@@ -63,7 +71,7 @@ public class VistaActual extends JFrame {
 		JLabel lblMesaNro = new JLabel("MESA NRO: ");
 		lblMesaNro.setForeground(new Color(0, 128, 128));
 		lblMesaNro.setFont(new Font("Sylfaen", Font.PLAIN, 25));
-		lblMesaNro.setBounds(110, 25, 202, 41);
+		lblMesaNro.setBounds(477, 27, 202, 41);
 		panel.add(lblMesaNro);
 		
 		JLabel lblVolver = new JLabel("<--Volver");
@@ -84,16 +92,16 @@ public class VistaActual extends JFrame {
 		
 		JLabel lblComensales = new JLabel("");
 		lblComensales.setFont(new Font("Times New Roman", Font.PLAIN, 14));
-		lblComensales.setBounds(70, 77, 216, 32);
+		lblComensales.setBounds(437, 79, 216, 32);
 		panel.add(lblComensales);
 		
 		JLabel lblEstado = new JLabel("");
 		lblEstado.setFont(new Font("Times New Roman", Font.PLAIN, 14));
-		lblEstado.setBounds(70, 111, 216, 32);
+		lblEstado.setBounds(437, 113, 216, 32);
 		panel.add(lblEstado);
 		
 		btnReservar = new JButton("Reservar");
-		btnReservar.setBounds(389, 32, 89, 23);
+		btnReservar.setBounds(756, 34, 89, 23);
 		panel.add(btnReservar);
 		btnReservar.setEnabled(false);
 		btnReservar.addActionListener(new ActionListener() {
@@ -117,7 +125,7 @@ public class VistaActual extends JFrame {
 		});
 		
 		btnLiberar = new JButton("Liberar");
-		btnLiberar.setBounds(389, 77, 89, 23);
+		btnLiberar.setBounds(756, 79, 89, 23);
 		panel.add(btnLiberar);
 		btnLiberar.setEnabled(false);
 		btnLiberar.addActionListener(new ActionListener() {
@@ -125,13 +133,14 @@ public class VistaActual extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				int fila = table.getSelectedRow();
-				boolean flag=control.liberarMesa(nroMesa);
+					boolean flag = control.liberarMesa(nroMesa);
 				if(flag==true) {
-					modeloTabla.setValueAt("Liberada", fila, 1);
-					((AbstractTableModel) table.getModel()).fireTableCellUpdated(fila, 1);
-					((AbstractTableModel) table.getModel()).fireTableCellUpdated(fila, 2);
-					((AbstractTableModel) table.getModel()).fireTableCellUpdated(fila, 0);
-				}else {
+						abrirDialog();
+						modeloTabla.setValueAt("Liberada", fila, 1);
+						((AbstractTableModel) table.getModel()).fireTableCellUpdated(fila, 1);
+						((AbstractTableModel) table.getModel()).fireTableCellUpdated(fila, 2);
+						((AbstractTableModel) table.getModel()).fireTableCellUpdated(fila, 0);
+					}else {
 					System.out.println("ENTRO EN ELSE-LIBERAR");
 				}
 				
@@ -139,9 +148,46 @@ public class VistaActual extends JFrame {
 		});
 		
 		btnOcupar = new JButton("Ocupar");
-		btnOcupar.setBounds(389, 120, 89, 23);
+		btnOcupar.setBounds(756, 122, 89, 23);
 		panel.add(btnOcupar);
 		btnOcupar.setEnabled(false);
+		
+		cmbxFiltro = new JComboBox();
+		cmbxFiltro.setModel(new DefaultComboBoxModel(new String[] {"Ninguno", "Reservadas", "Ocupadas", "Liberadas"}));
+		cmbxFiltro.setSelectedIndex(0);
+		cmbxFiltro.setBounds(54, 74, 171, 32);
+		panel.add(cmbxFiltro);
+		cmbxFiltro.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(cmbxFiltro.getSelectedItem().equals("Ninguno")) {
+					borrarRegistros();
+					control.listaMesasLambda().forEach(m->{
+			            String estadoMesa = m.enQueEstadoEstoy();  
+			            String numeroMesa = String.valueOf(m.getNroMesa());
+			            String capacidad = String.valueOf(m.getCapacidad());
+
+			            modeloTabla.addRow(new Object[]{numeroMesa, estadoMesa, capacidad});
+					});
+
+				}else {
+					borrarRegistros();
+					control.listaMesasLambda(cmbxFiltro.getSelectedItem().toString()).forEach(m->{
+			            String estadoMesa = m.enQueEstadoEstoy();  
+			            String numeroMesa = String.valueOf(m.getNroMesa());
+			            String capacidad = String.valueOf(m.getCapacidad());
+
+			            modeloTabla.addRow(new Object[]{numeroMesa, estadoMesa, capacidad});
+					});
+				}
+				
+			}
+		});
+		
+		JLabel lblFiltro = new JLabel("Filtro:");
+		lblFiltro.setBounds(54, 54, 46, 14);
+		panel.add(lblFiltro);
 		btnOcupar.addActionListener(new ActionListener() {
 			
 			@Override
@@ -176,13 +222,13 @@ public class VistaActual extends JFrame {
 			 }
 			};
 			
-			for (Mesa mesa : control.listaMesas()) {
-	            String estadoMesa = mesa.enQueEstadoEstoy();  
-	            String numeroMesa = String.valueOf(mesa.getNroMesa());
-	            String capacidad = String.valueOf(mesa.getCapacidad());
+			 control.listaMesasLambda().forEach(m->{
+	            String estadoMesa = m.enQueEstadoEstoy();  
+	            String numeroMesa = String.valueOf(m.getNroMesa());
+	            String capacidad = String.valueOf(m.getCapacidad());
 
 	            modeloTabla.addRow(new Object[]{numeroMesa, estadoMesa, capacidad});
-	        }
+	        });
 
 		table = new JTable(modeloTabla);
 		table.getColumnModel().getColumn(0).setCellRenderer(new EstadoCellRenderer());
@@ -216,4 +262,44 @@ public class VistaActual extends JFrame {
 	        });
 		
 	}
+	
+	private void borrarRegistros() {
+        int rowCount = modeloTabla.getRowCount();
+
+        for (int i = rowCount - 1; i >= 0; i--) {
+        	modeloTabla.removeRow(i);
+        }
+    }
+
+private void abrirDialog() {
+    
+    AsignarConsumoMesa dialog = new AsignarConsumoMesa(nroMesa, control);
+    dialog.setDefaultCloseOperation(ReservaMesa.DISPOSE_ON_CLOSE);
+    dialog.setVisible(true);
+    dialog.addWindowListener(new WindowAdapter() {
+        @Override
+        public void windowClosed(WindowEvent e) {
+            borrarRegistros();
+            control.listaMesasLambda().forEach(mesa -> {
+			    String estadoMesa = estadoAString(mesa.getEstado());
+			    String numeroMesa = String.valueOf(mesa.getNroMesa());
+			    String capacidad = String.valueOf(mesa.getCapacidad());
+
+			    modeloTabla.addRow(new Object[]{numeroMesa, estadoMesa, capacidad});
+			});
+          
+        }
+    });
+   
+}
+
+ private String estadoAString(Estado est) {
+	 if(est instanceof Reservada) {
+		 return "Reservada";
+	 }else if(est instanceof Liberada){
+		 return "Liberada";
+	 }else {
+		 return "Ocupada";
+	 }
+ }
 }

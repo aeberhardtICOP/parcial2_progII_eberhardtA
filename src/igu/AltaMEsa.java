@@ -28,15 +28,25 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JButton;
 import javax.swing.border.EtchedBorder;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.DefaultComboBoxModel;
 
 public class AltaMEsa extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	private Controlador control;
-	private JTable table;
 	private JTextField textField;
 	private DefaultTableModel modeloTabla;
+	private JTextField txtCantMesas;
+	private JComboBox cmbx;
+	private JLabel lblCantMesas;
+	private JLabel lblCantidadTotalMesas;
+	private JLabel lblCantidadDos;
+	private JLabel lblCantidadCuatro;
+	private JLabel lblCantidadSeis;
+	private JLabel lblCantidadOcho;
 
 	public AltaMEsa(Controlador control) {
 		setTitle("Alta mesa");
@@ -45,23 +55,23 @@ public class AltaMEsa extends JFrame {
 		setBounds(100, 100, 941, 666);
 		contentPane = new JPanel();
 		setResizable(false);
-
+		
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
 		JPanel panelCarga = new JPanel();
 		panelCarga.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Alta mesa:", TitledBorder.CENTER, TitledBorder.TOP, null, new Color(0, 0, 0)));
-		panelCarga.setBounds(10, 11, 905, 353);
+		panelCarga.setBounds(10, 11, 905, 292);
 		contentPane.add(panelCarga);
 		panelCarga.setLayout(null);
 		
 		textField = new JTextField();
-		textField.setBounds(54, 80, 273, 38);
+		textField.setBounds(428, 55, 273, 38);
 		panelCarga.add(textField);
 		textField.setColumns(10);
 		
 		JLabel lblCapacidadMesa = new JLabel("Capacidad mesa:");
-		lblCapacidadMesa.setBounds(54, 55, 153, 14);
+		lblCapacidadMesa.setBounds(428, 39, 153, 14);
 		panelCarga.add(lblCapacidadMesa);
 		
 		JLabel lblVolver = new JLabel("<--Volver");
@@ -81,59 +91,104 @@ public class AltaMEsa extends JFrame {
         });
 		
 		JButton btnGuadrar = new JButton("Guardar");
-		btnGuadrar.setBounds(714, 276, 153, 52);
+		btnGuadrar.setBounds(428, 195, 153, 52);
 		panelCarga.add(btnGuadrar);
 		btnGuadrar.addActionListener(new ActionListener() {
-
+			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(esNumero(textField.getText())==true) {
-					control.altaMesa(textField.getText());
-					String capacidad = textField.getText();
-					Long nroMesa=control.UltimoIdMesa();
+				if(cmbx.getSelectedItem().toString().equals("Paquete")) {
+					control.altaPaqueteMesas(txtCantMesas.getText(), textField.getText());
+					conteo();
 					textField.setText("");
-					Object[] fila = new Object[3];
-					fila[0] = nroMesa;
-					fila[1] = "Liberada";
-					fila[2] = capacidad;
-
-					modeloTabla.addRow(fila);
-					modeloTabla.fireTableDataChanged();
-					table.setModel(modeloTabla);
+					txtCantMesas.setText("");
 				}else {
-					  JOptionPane.showMessageDialog(null, "Error de capacidad: Ingrese un número.");
+					control.altaMesa(textField.getText());
+					conteo();
+					textField.setText("");
+					txtCantMesas.setText("");
 				}
+				
+				
 			}
-			
-			
 		});
 		
+		txtCantMesas = new JTextField();
+		txtCantMesas.setEnabled(false);
+		txtCantMesas.setColumns(10);
+		txtCantMesas.setBounds(428, 121, 273, 38);
+		panelCarga.add(txtCantMesas);
+		
+		lblCantMesas = new JLabel("Cantidad:");
+		lblCantMesas.setEnabled(false);
+		lblCantMesas.setBounds(426, 104, 98, 14);
+		panelCarga.add(lblCantMesas);
+		
+		cmbx = new JComboBox();
+		cmbx.setModel(new DefaultComboBoxModel(new String[] {"Mesa indiviudal", "Paquete"}));
+		cmbx.setSelectedIndex(0);
+		cmbx.setBounds(65, 104, 153, 38);
+		panelCarga.add(cmbx);
+		cmbx.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(cmbx.getSelectedItem().toString().equals("Paquete")) {
+					txtCantMesas.setEnabled(true);
+					lblCantMesas.setEnabled(true);
+				}else {
+					txtCantMesas.setEnabled(false);
+					txtCantMesas.setText("");
+					lblCantMesas.setEnabled(false);
+				}
+				
+			}
+		});
+		
+		JLabel lblNewLabel_1 = new JLabel("Tipo de alta:");
+		lblNewLabel_1.setBounds(65, 88, 98, 14);
+		panelCarga.add(lblNewLabel_1);
+
 		JPanel panelTabla = new JPanel();
 		panelTabla.setBorder(new TitledBorder(null, "Mesas:", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panelTabla.setBounds(10, 375, 905, 241);
+		panelTabla.setBounds(10, 314, 905, 302);
 		contentPane.add(panelTabla);
 		panelTabla.setLayout(null);
 		
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(10, 11, 885, 219);
-		panelTabla.add(scrollPane);
-		modeloTabla = new DefaultTableModel(new Object[]{"Nro MESA", "ESTADO", "CAPACIDAD"}, 0) {
-			 public boolean isCellEditable(int row, int column) {
-	             return false;
-			 }
-			};
-			
-		for (Mesa mesa : control.listaMesas()) {
-            String estadoMesa = mesa.enQueEstadoEstoy();  
-            String numeroMesa = String.valueOf(mesa.getNroMesa());
-            String capacidad = String.valueOf(mesa.getCapacidad());
-
-            modeloTabla.addRow(new Object[]{numeroMesa, estadoMesa, capacidad});
-        }
+		lblCantidadTotalMesas = new JLabel("Total mesas:");
+		lblCantidadTotalMesas.setForeground(new Color(0, 128, 128));
+		lblCantidadTotalMesas.setFont(new Font("Sylfaen", Font.PLAIN, 25));
+		lblCantidadTotalMesas.setBounds(144, 43, 301, 41);
+		panelTabla.add(lblCantidadTotalMesas);
 		
-		table = new JTable(modeloTabla);
-		scrollPane.setViewportView(table);
-		table.setRowHeight(30);
+		lblCantidadDos = new JLabel("Dos comensales:");
+		lblCantidadDos.setForeground(new Color(0, 0, 0));
+		lblCantidadDos.setFont(new Font("Sylfaen", Font.PLAIN, 12));
+		lblCantidadDos.setBounds(302, 96, 143, 41);
+		panelTabla.add(lblCantidadDos);
+		
+		lblCantidadCuatro = new JLabel("Cuatro comensales:");
+		lblCantidadCuatro.setForeground(Color.BLACK);
+		lblCantidadCuatro.setFont(new Font("Sylfaen", Font.PLAIN, 12));
+		lblCantidadCuatro.setBounds(302, 148, 143, 41);
+		panelTabla.add(lblCantidadCuatro);
+		
+		lblCantidadSeis = new JLabel("Seis comensales:");
+		lblCantidadSeis.setForeground(Color.BLACK);
+		lblCantidadSeis.setFont(new Font("Sylfaen", Font.PLAIN, 12));
+		lblCantidadSeis.setBounds(540, 96, 143, 41);
+		panelTabla.add(lblCantidadSeis);
+		
+		lblCantidadOcho = new JLabel("Ocho comensales:");
+		lblCantidadOcho.setForeground(Color.BLACK);
+		lblCantidadOcho.setFont(new Font("Sylfaen", Font.PLAIN, 12));
+		lblCantidadOcho.setBounds(540, 148, 143, 41);
+		panelTabla.add(lblCantidadOcho);
+		{
+			conteo();
+		}
+
+        
 	}
 	
 	 public static boolean esNumero(String str) {
@@ -144,6 +199,12 @@ public class AltaMEsa extends JFrame {
 	            return false;
 	        }
 	    }
-	
+	 private void conteo() {
+		 lblCantidadTotalMesas.setText("Total mesas: "+control.cantidadMesasTotal());
+		 lblCantidadDos.setText("Dos comensales: "+control.cantidadMesas(2));
+		 lblCantidadCuatro.setText("Cuatro comensales: "+control.cantidadMesas(4));
+		 lblCantidadSeis.setText("Seis comensales: "+control.cantidadMesas(6));
+		 lblCantidadOcho.setText("Ocho comensales: "+control.cantidadMesas(8));
+	 }
 }
 

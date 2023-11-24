@@ -53,6 +53,7 @@ public class GenerarReserva extends JFrame {
 	private JTextField txtApellido;
 	private String nroMesa;
 	private int iElementoTabla;
+	private JButton btnBuscarMesas;
 	
 		
 	public GenerarReserva(Controlador contr) {
@@ -97,13 +98,14 @@ public class GenerarReserva extends JFrame {
 		lblCantidadComensales.setBounds(81, 123, 147, 14);
 		pnlAltaReserva.add(lblCantidadComensales);
 		
-		JButton btnBuscarMesas = new JButton("Buscar disponibles");
+		btnBuscarMesas = new JButton("Buscar disponibles");
 		btnBuscarMesas.setBounds(320, 218, 136, 46);
 		pnlAltaReserva.add(btnBuscarMesas);
 		btnBuscarMesas.addActionListener(new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				borrarRegistros();
 				for (Mesa mesa : contr.mesasDisponiblesPara(ftxtFecha.getText(), txtComensales.getText())) {
 		            String estadoMesa = "Liberada";  
 		            String numeroMesa = String.valueOf(mesa.getNroMesa());
@@ -220,4 +222,11 @@ public class GenerarReserva extends JFrame {
         });
 		
 	}
+	 private void borrarRegistros() {
+	        int rowCount = modeloTabla.getRowCount();
+
+	        for (int i = rowCount - 1; i >= 0; i--) {
+	        	modeloTabla.removeRow(i);
+	        }
+	    }
 }

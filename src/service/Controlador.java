@@ -2,6 +2,7 @@ package service;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -10,8 +11,11 @@ import java.util.Map.Entry;
 
 import excepciones.EstadoInvalidoException;
 import excepciones.MesaConReservasException;
+import excepciones.MesaOcupadaException;
 import model.Mesa;
+import model.MesaReservaDTO;
 import model.Reserva;
+import model.Reservada;
 import model.Resto;
 import model.Liberada;
 import repository.RestóRepository;
@@ -61,6 +65,16 @@ public class Controlador {
 		return mesas;
 	}
 	
+	public List<Mesa>listaMesasLambda(){
+		List<Mesa>mesas = new ArrayList<Mesa>();
+		restaurante.getMesas().values().forEach(mesa->{
+			mesas.add(mesa);
+		});
+		Collections.sort(mesas, (mesa1, mesa2) -> Integer.compare(mesa1.getCapacidad(), mesa2.getCapacidad()));
+		return mesas;
+		
+	}
+	
 	public List<Mesa>mesasDisponiblesPara(String fecha, String comensales){
 		SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
 		Date fechaDate;
@@ -103,6 +117,40 @@ public class Controlador {
 		}
 	}
 	
+	public List<MesaReservaDTO>estadoMesasFecha(String fecha){
+		SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+		Date fechaDate;
+		try {
+			//mesas ya reservadas
+			fechaDate = format.parse(fecha);
+			HashMap<Long, Mesa>mesasNoDisp=restaurante.mesasNoDisponibles(fechaDate);
+			List<MesaReservaDTO> listaMesas = new ArrayList<>();
+		    mesasNoDisp.values().forEach(mesaOriginal -> {
+		    	MesaReservaDTO mesaNueva = new MesaReservaDTO();
+		    	mesaNueva.setEstado(new Reservada());
+		    	mesaNueva.setNroMesa(mesaOriginal.getNroMesa());
+		    	mesaNueva.setCapacidad(mesaOriginal.getCapacidad());
+		    	listaMesas.add(mesaNueva);
+		    });
+			//mesas liberadas
+			fechaDate = format.parse(fecha);
+			HashMap<Long, Mesa>mesasDisp=restaurante.mesasDisponibles(fechaDate);
+		    mesasDisp.values().forEach(mesaOriginal -> {
+		    	MesaReservaDTO mesaNueva = new MesaReservaDTO();
+		    	mesaNueva.setEstado(new Liberada());
+		    	mesaNueva.setNroMesa(mesaOriginal.getNroMesa());
+		    	mesaNueva.setCapacidad(mesaOriginal.getCapacidad());
+		    	listaMesas.add(mesaNueva);
+		    });
+		    Collections.sort(listaMesas, (mesa1, mesa2) -> Integer.compare(mesa1.getCapacidad(), mesa2.getCapacidad()));
+			return listaMesas; 
+		} catch (ParseException e) {
+			e.printStackTrace();
+			return null;
+		}
+		
+	}
+	
 	public void generarReserva(String nroMesa, String apellido, String nombre, String fecha, String comensales) {
 		SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
 		try {
@@ -124,9 +172,14 @@ public class Controlador {
 		mrep.guardarMesa(m, restaurante.getId());
 	}
 	
-	public void bajaMesa(String nroMesa) throws MesaConReservasException {
+	public void bajaMesa(String nroMesa) throws MesaConReservasException, MesaOcupadaException {
 		Long nro_mesa = Long.parseLong(nroMesa);
-		mrep.eliminarMesa(nro_mesa);
+		if(mrep.buscarMesaPorId(nro_mesa).enQueEstadoEstoy().equals("Ocupada")) {
+			throw new MesaOcupadaException();
+		}else {
+			restaurante.eliminarMesa(nro_mesa);
+			mrep.eliminarMesa(nro_mesa);
+		}
 	}
 	
 	public Mesa traerMesa(Long nroMesa) {
@@ -137,15 +190,15 @@ public class Controlador {
 		return mrep.ultimoIdMesa();
 	}
 	
-	public boolean liberarMesa(String nroMesa)  {
-		Long nroM=Long.parseLong(nroMesa);
-		Mesa m = restaurante.getMesa(nroM);
+	public boolean liberarMesa(String nroMesa) {
 		try {
+			Long nroM=Long.parseLong(nroMesa);
+			Mesa m = restaurante.getMesa(nroM);
 			m.liberar();
 			mrep.editarEstadoMesa(nroM, "Liberada");
 			return true;
 		} catch (EstadoInvalidoException e) {
-			e.printStackTrace();
+			e.getMessage();
 			return false;
 		}
 		
@@ -158,7 +211,7 @@ public class Controlador {
 			mrep.editarEstadoMesa(nroM, "Ocupada");
 			return true;
 		} catch (EstadoInvalidoException e) {
-			e.printStackTrace();
+			e.getMessage();
 			return false;
 		}
 	
@@ -172,8 +225,76 @@ public class Controlador {
 			return true;
 		} catch (EstadoInvalidoException e) {
 			System.out.println("Entro a la excepcion de reserva");
+			e.getMessage();
 			return false;
 		}
+		
+	}
+	
+	
+	public void altaPaqueteMesas(String cantidad, String capacidad) {
+		for(int i =0; i<Integer.parseInt(cantidad);i++) {
+			Mesa m = new Mesa(Integer.parseInt(capacidad),0);
+			Long uId=mrep.ultimoIdMesa();
+			m.setNroMesa(uId+1);
+			mrep.guardarMesa(m, this.restaurante.getId());
+			this.restaurante.agregarMesa(m);
+		}
+	}
+	
+	public int cantidadMesasTotal() {
+		int cont=0;
+		for(Mesa m : restaurante.getMesas().values()) {
+			cont++;
+		}
+		return cont;
+	}
+	
+	public int cantidadMesas(int nroComensales) {
+		int cont=0;
+		for(Mesa m : restaurante.getMesas().values()) {
+			if(m.getCapacidad()==nroComensales) {
+				cont++;
+			}
+		}
+		return cont;
+	}
+	
+	public void sumarConsumoMesa(String nroMesa, String consumo) {
+		int consumoViejo=mrep.getConsumoMesa(Long.parseLong(nroMesa));
+		int consumoNuevo=consumoViejo+Integer.parseInt(consumo); 
+		restaurante.getMesa(Long.parseLong(nroMesa)).setConsumo(consumoNuevo);
+		mrep.setConsumoMesa(Long.parseLong(nroMesa), consumoNuevo);
+	}
+	
+	public List<Mesa> listaMesasPorConsumo(){
+		List<Mesa>mesas = new ArrayList<Mesa>();
+		restaurante.getMesas().values().forEach(mesa->{
+			mesas.add(mesa);
+		});
+		Collections.sort(mesas, (mesa1, mesa2) -> Double.compare(mesa2.getConsumo(), mesa1.getConsumo()));
+		return mesas;
+		
+	}
+	
+	public List<Mesa> listaMesasLambda(String filtro){
+		String estado="";
+		if(filtro.equals("Reservadas")) {
+			estado="Reservada";
+		}else if(filtro.equals("Liberadas")) {
+			estado="Liberada";
+		}else if(filtro.equals("Ocupadas")) {
+			estado="Ocupada";
+		}
+		
+		List<Mesa>mesas = new ArrayList();
+		for(Mesa m : restaurante.getMesas().values()) {
+			if(m.enQueEstadoEstoy().equals(estado)) {
+				mesas.add(m);
+			}
+		}
+		Collections.sort(mesas, (mesa1, mesa2) -> Integer.compare(mesa1.getCapacidad(), mesa2.getCapacidad()));
+		return mesas;
 		
 	}
 		

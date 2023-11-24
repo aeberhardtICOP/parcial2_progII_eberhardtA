@@ -12,7 +12,11 @@ import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 
 import excepciones.MesaConReservasException;
+import excepciones.MesaOcupadaException;
+import model.Estado;
+import model.Liberada;
 import model.Mesa;
+import model.Reservada;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -28,6 +32,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
 import javax.swing.JButton;
 
 public class BajaMesa extends JFrame {
@@ -71,7 +78,7 @@ public class BajaMesa extends JFrame {
 			 }
 			};
 			
-			for (Mesa mesa : control.listaMesas()) {
+			for (Mesa mesa : control.listaMesasLambda()) {
 	            String estadoMesa = mesa.enQueEstadoEstoy();  
 	            String numeroMesa = String.valueOf(mesa.getNroMesa());
 	            String capacidad = String.valueOf(mesa.getCapacidad());
@@ -152,20 +159,63 @@ public class BajaMesa extends JFrame {
 					 DefaultTableModel modelo = (DefaultTableModel) table.getModel();
 					  int filaSeleccionada = table.getSelectedRow();
 					  if(filaSeleccionada >= 0) {
-					    modelo.removeRow(filaSeleccionada);
-					    table.setModel(modelo);
-					    lblMesaNro.setText("NRO MESA: ");
-                    	lblEstado.setText("");
-                    	lblComensales.setText("");
+					     nroMesa = (String) table.getValueAt(filaSeleccionada, 0);
+					     abrirDialog();
+					    
 					  } else {
 						JOptionPane.showMessageDialog(null, "Debe seleccionar una mesa!!!", "Error", JOptionPane.ERROR_MESSAGE);
 					  }
 				} catch (MesaConReservasException e1) {
 					JOptionPane.showMessageDialog(null, "No se puede eliminar la mesa por que tiene reservas asociadas!!!", "Error", JOptionPane.ERROR_MESSAGE);
-				} catch(Exception e2) {
+				} catch(NumberFormatException e2) {
 					JOptionPane.showMessageDialog(null, "Debe seleccionar una mesa!!!", "Error", JOptionPane.ERROR_MESSAGE);
+				} catch(MesaOcupadaException e3) {
+					JOptionPane.showMessageDialog(null, "No se puede eliminar una mesa ocupada!!", "Error", JOptionPane.ERROR_MESSAGE);
 				}
+				
 			}
 		});
 	}
+	
+	 private void borrarRegistros() {
+	        int rowCount = modeloTabla.getRowCount();
+
+	        for (int i = rowCount - 1; i >= 0; i--) {
+	        	modeloTabla.removeRow(i);
+	        }
+	    }
+	
+	private void abrirDialog() {
+        
+        ConfirmacionBaja dialog = new ConfirmacionBaja(nroMesa, control);
+        dialog.setDefaultCloseOperation(ReservaMesa.DISPOSE_ON_CLOSE);
+        dialog.setVisible(true);
+        dialog.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                borrarRegistros();
+                control.listaMesasLambda().forEach(mesa -> {
+				    String estadoMesa = estadoAString(mesa.getEstado());
+				    String numeroMesa = String.valueOf(mesa.getNroMesa());
+				    String capacidad = String.valueOf(mesa.getCapacidad());
+
+				    modeloTabla.addRow(new Object[]{numeroMesa, estadoMesa, capacidad});
+				});
+                lblMesaNro.setText("NRO MESA: ");
+            	lblEstado.setText("");
+            	lblComensales.setText("");
+            }
+        });
+       
+    }
+	
+	 private String estadoAString(Estado est) {
+		 if(est instanceof Reservada) {
+			 return "Reservada";
+		 }else if(est instanceof Liberada){
+			 return "Liberada";
+		 }else {
+			 return "Ocupada";
+		 }
+	 }
 }

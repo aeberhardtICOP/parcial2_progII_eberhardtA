@@ -302,7 +302,7 @@ public class Resto {
 	public HashMap<Long, Mesa> mesasNoDisponibles(Date fecha) {
 		HashMap<Long, Mesa> mesasDisponibles = new HashMap<Long, Mesa>();
 		 for (Mesa mesa : mesas.values()) {
-	         if (esMesaDisponibleEnFecha(mesa, fecha)==false) {
+	         if (!esMesaDisponibleEnFecha(mesa, fecha)) {
 	        	 mesasDisponibles.put(mesa.getNroMesa(), mesa);
 	         }
 	        }
@@ -311,7 +311,7 @@ public class Resto {
 	
 	 private boolean esMesaDisponibleEnFecha(Mesa mesa, Date fecha) {
 	        for (Reserva reserva : reservas.values()) {
-	            if (reserva.getMesa().equals(mesa) && reserva.getFecha().equals(fecha)) {
+	            if (reserva.getMesa().getNroMesa().equals(mesa.getNroMesa()) && reserva.getFecha().equals(fecha)) {
 	                return false; 
 	            }
 	        }

@@ -22,7 +22,6 @@ public class ReservaRepository {
 	  }
 
 	  public void guardarReserva(Reserva reserva) {
-
 	    String sql = "INSERT INTO Reserva (fecha, nombre, apellido, comensales, nro_mesa) VALUES (?, ?, ?, ?, ?)";
 	    
 	    try {
@@ -65,7 +64,6 @@ public class ReservaRepository {
 		      reserva.setApellido(resultSet.getString("apellido"));
 		      reserva.setCantidadComensales(resultSet.getInt("comensales"));
 		      reserva.setMesa(mesa.buscarMesaPorId(resultSet.getLong("nro_mesa")));
-		      
 		      reservas.put(reserva.getId(), reserva);
 		    }
 		  } catch (SQLException e) {

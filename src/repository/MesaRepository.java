@@ -113,6 +113,50 @@ public class MesaRepository {
 
 		}
 	  
+	  public int getConsumoMesa(Long nroMesa) {
+
+		  int consumo = 0;
+		  
+		  String sql = "SELECT consumo FROM mesa WHERE nro_mesa = ?;";
+
+		  try { 
+		    connection = conexion.conectar();
+		    preparedStatement = connection.prepareStatement(sql);
+		    preparedStatement.setLong(1, nroMesa);
+		    resultSet = preparedStatement.executeQuery();
+
+		    if (resultSet.next()) {
+		      consumo = resultSet.getInt("consumo");
+		    }
+
+		  } catch (SQLException e) {
+		    e.printStackTrace();
+		  } finally {
+		    cerrarRecursos();
+		  }
+
+		  return consumo;
+
+		}
+	  
+	  public void setConsumoMesa(Long nroMesa, int nuevoConsumo) {
+		    String sql = "UPDATE mesa SET consumo = ? WHERE nro_mesa = ?;";
+
+		    try {
+		        connection = conexion.conectar();
+		        preparedStatement = connection.prepareStatement(sql);
+		        preparedStatement.setInt(1, nuevoConsumo);
+		        preparedStatement.setLong(2, nroMesa);
+
+		        preparedStatement.executeUpdate();
+
+		    } catch (SQLException e) {
+		        e.printStackTrace();
+		    } finally {
+		        cerrarRecursos();
+		    }
+		}
+	  
 	  public void eliminarMesa(long idMesa) throws MesaConReservasException {
 
 		  String sql = "SELECT COUNT(*) AS cantidad FROM Reserva WHERE nro_mesa = ?";
