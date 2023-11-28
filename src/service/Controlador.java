@@ -3,11 +3,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import excepciones.EstadoInvalidoException;
 import excepciones.MesaConReservasException;
@@ -268,6 +270,14 @@ public class Controlador {
 	}
 	
 	public List<Mesa> listaMesasPorConsumo(){
+		
+		Comparator<Mesa> byConsumo = Comparator.comparingDouble(Mesa::getConsumo).reversed();
+	    return restaurante.getMesas().values().stream().sorted(byConsumo)
+						                               .limit(3)
+						                               .collect(Collectors.toList());
+	}
+	
+	public List<Mesa> listaMesasPorConsumo2(){
 		List<Mesa>mesas = new ArrayList<Mesa>();
 		restaurante.getMesas().values().forEach(mesa->{
 			mesas.add(mesa);
